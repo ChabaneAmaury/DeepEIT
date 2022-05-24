@@ -128,3 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /.idea/
+/dataset/images/
+/dataset/eit_positive.csv
