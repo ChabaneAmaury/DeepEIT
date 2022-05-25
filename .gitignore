@@ -130,3 +130,6 @@ dmypy.json
 /.idea/
 /dataset/images/
 /dataset/eit_positive.csv
+
+/model/
+/model/!*.h5
