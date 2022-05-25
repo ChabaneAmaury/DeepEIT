@@ -8,9 +8,6 @@ from pyeit import mesh
 from pyeit.eit.fem import Forward
 from pyeit.eit.utils import eit_scan_lines
 from pyeit.mesh.shape import circle
-from tensorflow import keras
-
-# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 x_train = x_test = y_train = y_test = None
 ex_mat = None
@@ -179,8 +176,8 @@ def gauss_newtonian(n_el, anomaly, model=None, model2=None):
 def main_interact(nb_elect):
     model1 = None
     # model1 = load_model(f"model/eit_reconstruction_{nb_elect}pts_500")
-    reconstruction = load_model(f"model/eit_reconstruction_{nb_elect}pts")
-    autoencoder = load_model(f"model/eit_auto_{nb_elect}pts")
+    reconstruction = load_model(f"../model/eit_reconstruction_{nb_elect}pts")
+    autoencoder = load_model(f"../model/eit_auto_{nb_elect}pts")
 
     model1 = Sequential([
         reconstruction,

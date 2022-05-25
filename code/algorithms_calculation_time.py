@@ -218,8 +218,8 @@ def main():
     # plt.show()
 
     for n_el in [8, 16, 32, 64]:
-        reconstructor = keras.models.load_model(f"model/eit_reconstruction_{n_el}pts.h5")
-        autoencoder = keras.models.load_model(f"model/eit_auto_{n_el}pts.h5")
+        reconstructor = keras.models.load_model(f"../model/eit_reconstruction_{n_el}pts.h5")
+        autoencoder = keras.models.load_model(f"../model/eit_auto_{n_el}pts.h5")
         model = Sequential([
             reconstructor,
             autoencoder

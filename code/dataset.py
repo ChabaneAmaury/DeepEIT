@@ -58,7 +58,7 @@ class DatasetDeepEIT:
 
     def get_datasets(self, x: str, y: str, batch_size, random_state=None):
         start_time = datetime.now()
-        x, y = self.load_data("dataset/eit_positive.csv", x=x, y=y)
+        x, y = self.load_data("../dataset/eit_positive.csv", x=x, y=y)
 
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=random_state)
 
@@ -100,7 +100,5 @@ class DatasetDeepEIT:
             # Color
             image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
             image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-        # print(image_from_plot)
-        # print(image_from_plot.shape)
         plt.close()
         return image_from_plot

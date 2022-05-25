@@ -4,14 +4,13 @@
 # Distributed under the (new) BSD License. See LICENSE.txt for more info.
 from __future__ import division, absolute_import, print_function
 
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 import pyeit.mesh as mesh
-from pyeit.mesh import quality
 from pyeit.eit.fem import Forward
 from pyeit.eit.utils import eit_scan_lines
-from pyeit.mesh.shape import thorax, circle
+from pyeit.mesh import quality
+from pyeit.mesh.shape import circle
 
 nb_elect = 16
 
@@ -73,7 +72,6 @@ def fem_forward2d(anomaly):
     for ex_line in ex_mat:
         ex_line = ex_line.ravel()
         # Define electrode current sink and current source
-        # ex_line = ex_mat[0].ravel()
 
         # calculate simulated data using FEM
         fwd = Forward(mesh_obj, el_pos)
@@ -110,7 +108,6 @@ def fem_forward2d(anomaly):
         ax1.set_ylim([-1.2, 1.2])
         ax1.set_xlim([-1.2, 1.2])
         fig.set_size_inches(6, 6)
-        # fig.savefig('demo_bp.png', dpi=96)
     plt.show()
 
 
@@ -118,4 +115,3 @@ if __name__ == "__main__":
     nb_elect = 16
     for anomaly in anomalies_list:
         fem_forward2d(anomaly)
-    # plt.show()

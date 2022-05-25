@@ -2,7 +2,6 @@ import datetime
 from ast import literal_eval
 from datetime import datetime
 from functools import partial
-from itertools import chain
 from multiprocessing import Pool
 from os import makedirs
 from os.path import exists, join
@@ -18,7 +17,6 @@ from pyeit.eit.fem import Forward
 from pyeit.eit.interp2d import sim2pts
 from pyeit.eit.utils import eit_scan_lines
 from pyeit.mesh.shape import circle
-from pymongo import MongoClient
 from tqdm import tqdm
 
 import mongodbAPI
@@ -57,14 +55,11 @@ def back_projection(n_el, anomaly):
     # adjacent stimulation (el_dist=1), adjacent measures (step=1)
     el_dist, step = 1, 1
     ex_mat = eit_scan_lines(n_el, el_dist)
-    # print(ex_mat)
 
     # calculate simulated data
     fwd = Forward(mesh_obj, el_pos)
     f0 = fwd.solve_eit(ex_mat, step=step, perm=mesh_obj["perm"])  # default data without perturbation
     f1 = fwd.solve_eit(ex_mat, step=step, perm=mesh_new["perm"])  # data with perturbation
-    # print(f1)
-    # print(f1.v.shape)
 
     """
     3. naive inverse solver using back-projection
@@ -80,15 +75,12 @@ def back_projection(n_el, anomaly):
     ax1.axis("equal")
     fig.colorbar(im, ax=axes.ravel().tolist())
 
-    # plt.show()
-
 
 def gauss_newtonian(n_el, anomaly, regularization=False, plot=True, raw_measures=False, return_delta_perm=False,
                     verbose=True):
     """ 0. construct mesh """
     # Mesh shape is specified with fd parameter in the instantiation, e.g : fd=thorax , Default :fd=circle
     mesh_obj, el_pos = mesh.create(n_el, h0=0.1, fd=circle)
-    # mesh_obj, el_pos = mesh.layer_circle()
 
     # extract node, element, alpha
     pts = mesh_obj["node"]
@@ -146,7 +138,6 @@ def gauss_newtonian(n_el, anomaly, regularization=False, plot=True, raw_measures
         eit.setup(p=0.5, lamb=0.01, method="kotre")
         ds = eit.solve(f1.v, f0.v, normalize=True)
         ds_n = sim2pts(pts, tri, np.real(ds))
-    # print(f"Gauss-newtonian reconstruction: {datetime.now() - start_time}")
 
     if not plot:
         return f1.v, ds_n
@@ -166,13 +157,9 @@ def gauss_newtonian(n_el, anomaly, regularization=False, plot=True, raw_measures
         ax = axes[1]
         ax.set_title(f'Gauss-newtonian reconstruction ({regularization=})')
         im = ax.tripcolor(x, y, tri, ds_n, shading="flat")
-        # for i, e in enumerate(el_pos):
-        #     ax.annotate(str(i + 1), xy=(x[e], y[e]), color="r")
         ax.set_aspect("equal")
 
         fig.colorbar(im, ax=axes.ravel().tolist())
-        # plt.savefig('../doc/images/demo_jac.png', dpi=96)
-        # plt.show()
 
 
 def gauss_newtonian_extract_image(x, y, tri, ds_n, grayscale=False):
@@ -195,8 +182,6 @@ def gauss_newtonian_extract_image(x, y, tri, ds_n, grayscale=False):
         # Color
         image_from_plot = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
         image_from_plot = image_from_plot.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-    # print(image_from_plot)
-    # print(image_from_plot.shape)
     plt.close()
     return image_from_plot
 
@@ -259,7 +244,6 @@ def main():
             'anomalies': data,
             'image': i
         })
-    # data_to_append = list(map(lambda x: {'anomalies': x}, anomalies_list))
 
     print(mongoClient.insertData(data_to_append, collection))
 
@@ -379,13 +363,10 @@ def export_images(path: str, csv_path: str, nb_elect: int):
                                             delta_perm="delta_perm" in img)
                 for u in pool.imap_unordered(calculate_partial, list(chunks(list(zip(df[img].tolist(), df[f"image"].tolist())), chunksize))):
                     pbar.update(len(u))
-        # my_values = tqdm(zip(df[img].tolist(), df[f"image"].tolist()), total=len(df[f'image']))
-        # zip(*map(create_and_save_image, my_values))
-        # results = list(map(create_and_save_image, df[img].tolist(), df[f"image"].tolist()))
 
 
 if __name__ == '__main__':
     main1()
     export_to_csv()
     for i in [8, 16, 32, 64]:
-        export_images("dataset/images", "dataset/eit_positive.csv", i)
+        export_images("../dataset/images", "dataset/eit_positive.csv", i)
