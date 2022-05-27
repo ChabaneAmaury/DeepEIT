@@ -3,12 +3,12 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from gast import literal_eval
+from keras.layers import GaussianNoise
 from matplotlib import pyplot as plt
 from pyeit import mesh
 from pyeit.mesh.shape import circle
 from sklearn.model_selection import train_test_split
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import GaussianNoise
 import tensorflow as tf
 
 
