@@ -176,8 +176,8 @@ def gauss_newtonian(n_el, anomaly, model=None, model2=None):
 def main_interact(nb_elect):
     model1 = None
     # model1 = load_model(f"model/eit_reconstruction_{nb_elect}pts_500")
-    reconstruction = load_model(f"../model/eit_reconstruction_{nb_elect}pts")
-    autoencoder = load_model(f"../model/eit_auto_{nb_elect}pts")
+    reconstruction = load_model(f"./model/eit_reconstruction_{nb_elect}pts.h5")
+    autoencoder = load_model(f"./model/eit_auto_{nb_elect}pts.h5")
 
     model1 = Sequential([
         reconstruction,
