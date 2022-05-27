@@ -133,3 +133,4 @@ dmypy.json
 
 model/*
 !model/*.h5
+/model_reconstruction_noise_copy.py
