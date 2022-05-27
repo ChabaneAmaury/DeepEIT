@@ -72,20 +72,6 @@ mseObject = MeanSquaredError()
 tf.config.run_functions_eagerly(True)
 
 
-def custom_loss(y_target, y_pred):
-    y_target = y_target.numpy()
-    y_pred = y_pred.numpy()
-
-    def images_compare(y_targ, y_pr):
-        img_target = deepDSObj.gauss_newtonian_extract_image(y_targ, grayscale=False).astype('float32')
-        img_pred = deepDSObj.gauss_newtonian_extract_image(y_pr, grayscale=False).astype('float32')
-        return mseObject(img_target, img_pred)
-
-    l = list(map(images_compare, y_target, y_pred))
-
-    return tf.reduce_max(l)
-
-
 def scheduler(epoch, lr):
     if epoch < 50:
         return lr
@@ -230,8 +216,6 @@ def gauss_newtonian(n_el, anomaly, regularization=False, model=None, model2=None
             print(f"Old ML reconstruction: {datetime.now() - start_time}")
 
         fig.colorbar(im, ax=axes.ravel().tolist())
-        # plt.savefig('../doc/images/demo_jac.png', dpi=96)
-        # plt.show()
 
 
 def kfold_crossvalidation(x, y, model_base, callbacks=None, verbose=0):
@@ -280,7 +264,7 @@ def kfold_crossvalidation(x, y, model_base, callbacks=None, verbose=0):
         acc_per_fold.append(history.history["val_loss"][-1])
         loss_per_fold.append(history.history["loss"][-1])
 
-        model.save(f"../model/eit_reconstruction_{nb_elect}pts_fold_{fold_no}.h5")
+        model.save(f"./model/eit_reconstruction_{nb_elect}pts_fold_{fold_no}.h5")
 
         # Increase fold number
         fold_no = fold_no + 1
@@ -306,12 +290,12 @@ def train(callbacks=None):
     input_shape = (ds_train.element_spec[0].shape[1],)
     output_shape = ds_train.element_spec[1].shape[1]
 
-    model = models.get_reconstructor(output_shape)
+    model = models.get_reconstructor(nb_elect, output_shape)
 
     model, history, score = models.fit_model(model, ds_train, ds_test, epochs, verbose=True,
                                              plot_history=True, callbacks=callbacks)
 
-    model.save(f"../model/eit_reconstruction_{nb_elect}pts.h5")
+    model.save(f"./model/eit_reconstruction_{nb_elect}pts_test.h5")
     return model
 
 
@@ -340,15 +324,16 @@ def model_evaluation(nb_elect, model1=None, model2=None, autoencoder=False, regu
 
 def main():
     model1 = train([early_stop, scheduler_callback])
-    model_evaluation(nb_elect, model1)
+    model2 = load_model(f"./model/eit_reconstruction_{nb_elect}pts.h5")
+    model_evaluation(nb_elect, model1, model2)
 
 
 def main_kfold():
     start_time = datetime.now()
-    x, y, = deepDSObj.load_data("../dataset/eit_positive.csv", x=f"v{nb_elect}", y=f"delta_perm{nb_elect}")
+    x, y, = deepDSObj.load_data("./dataset/eit_positive.csv", x=f"v{nb_elect}", y=f"delta_perm{nb_elect}")
     print(f"Data preparation time: {datetime.now() - start_time}")
 
-    model = models.get_reconstructor(y.shape[1])
+    model = models.get_reconstructor(nb_elect, y.shape[1])
 
     kfold_crossvalidation(x, y, model, verbose=1, callbacks=[scheduler_callback, early_stop])
 
@@ -356,9 +341,9 @@ def main_kfold():
 def main_autoencoder():
     start_time = datetime.now()
 
-    x, y = deepDSObj.load_data("../dataset/eit_positive.csv", x=f"v{nb_elect}", y=f"delta_perm{nb_elect}")
+    x, y = deepDSObj.load_data("./dataset/eit_positive.csv", x=f"v{nb_elect}", y=f"delta_perm{nb_elect}")
 
-    reconstruction = load_model(f"../model/eit_reconstruction_{nb_elect}pts")
+    reconstruction = load_model(f"./model/eit_reconstruction_{nb_elect}pts")
     x = reconstruction.predict(x)
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=42)
@@ -379,18 +364,18 @@ def main_autoencoder():
 
     print(f"Data preparation time: {datetime.now() - start_time}")
 
-    model = models.get_autoencoder_denoiser(x.shape[-1])
+    model = models.get_autoencoder_denoiser(nb_elect, x.shape[-1])
 
     model.fit(ds_train, epochs=50, callbacks=[early_stop],
               validation_data=ds_test, max_queue_size=10, workers=1, use_multiprocessing=True)
 
-    model.save(f"../model/eit_auto_{nb_elect}pts.h5")
+    model.save(f"./model/eit_auto_{nb_elect}pts.h5")
 
 
 def main_image_generator():
     start_time = datetime.now()
 
-    _, ds_x = deepDSObj.load_data("../dataset/eit_positive.csv", x=f"ds_n{nb_elect}", y=f"delta_perm{nb_elect}")
+    _, ds_x = deepDSObj.load_data("./dataset/eit_positive.csv", x=f"ds_n{nb_elect}", y=f"delta_perm{nb_elect}")
 
     # ds_x, x1 = ds_x + x1, None
 
@@ -399,7 +384,7 @@ def main_image_generator():
         filelist = glob.glob(join(path, f"delta_perm{nb_elect}/*.png"))
         return np.array([np.array(Image.open(fname))[:, :, :3] for fname in filelist])
 
-    ds_y = load_images("../dataset/images")
+    ds_y = load_images("./dataset/images")
     ds_x, ds_y = np.array(ds_x), (np.array(ds_y, dtype=np.uint8) / 255.0).astype("float32")
 
     x_train, x_test, y_train, y_test = train_test_split(ds_x, ds_y, test_size=0.20, random_state=42)
@@ -427,12 +412,12 @@ def main_image_generator():
     model.fit(ds_train, epochs=10, callbacks=[early_stop],
               validation_data=ds_test)
 
-    model.save(f"../model/eit_image_{nb_elect}pts.h5")
+    model.save(f"./model/eit_image_{nb_elect}pts.h5")
 
 
 def main_model_test():
-    reconstruction = load_model(f"../model/eit_reconstruction_{nb_elect}pts.h5")
-    autoencoder = load_model(f"../model/eit_auto_{nb_elect}pts.h5")
+    reconstruction = load_model(f"./model/eit_reconstruction_{nb_elect}pts.h5")
+    autoencoder = load_model(f"./model/eit_auto_{nb_elect}pts.h5")
     # imager = load_model(f"model/eit_image_{nb_elect}pts")
 
     model = Sequential([
@@ -445,13 +430,13 @@ def main_model_test():
         # autoencoder
     ])
     model.build((None, get_nb_measurements(nb_elect)))
-    plot_model(model, to_file="../model.png", expand_nested=True, show_shapes=True, show_layer_names=False)
+    plot_model(model, to_file="./model.png", expand_nested=True, show_shapes=True, show_layer_names=False)
     model_evaluation(nb_elect, model, model2, regularization=False, imager=False)
 
 
 def evaluate_model():
-    reconstruction = load_model(f"../model/eit_reconstruction_{nb_elect}pts.h5")
-    autoencoder = load_model(f"../model/eit_auto_{nb_elect}pts.h5")
+    reconstruction = load_model(f"./model/eit_reconstruction_{nb_elect}pts.h5")
+    autoencoder = load_model(f"./model/eit_auto_{nb_elect}pts.h5")
     # imager = load_model(f"model/eit_image_{nb_elect}pts")
 
     _, ds_test = deepDSObj.get_datasets(f"v_{nb_elect}", f"delta_perm{nb_elect}", batch_size, random_state=42)
