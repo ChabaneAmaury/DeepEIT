@@ -21,8 +21,6 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     save_best_only=True)
 
 
-
-
 class ModelCustomLoss:
     def __init__(self, nb_elect):
         self.deepDSObj = DatasetDeepEIT(nb_elect=nb_elect,
@@ -131,7 +129,7 @@ def fit_model(model, ds_train, ds_test, epochs, callbacks: list = None, verbose=
     :param model: The model to train.
     :param ds_train: The training dataset.
     :param ds_test: The testing dataset.
-    :param params: The model's parameters.
+    :param epochs: The training's epochs number.
     :param callbacks: (Optional) Any given callback for debugging purposes.
     :param verbose: (Optional) The verbosity of the train steps.
     :param plot_history: (Optional) Choose to show or not the history of the training once it's finished.
