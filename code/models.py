@@ -1,3 +1,4 @@
+import keras.losses
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as kb
@@ -21,8 +22,9 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     save_best_only=True)
 
 
-class ModelCustomLoss:
+class ModelCustomLoss(keras.losses.Loss):
     def __init__(self, nb_elect):
+        super().__init__()
         self.deepDSObj = DatasetDeepEIT(nb_elect=nb_elect,
                                         batch_size=None)
         tf.config.run_functions_eagerly(True)
@@ -65,10 +67,10 @@ def get_reconstructor(nb_elect: int, nb_outputs: int):
     ], name="Reconstructor")
 
     optimizer = Adam(learning_rate=1e-3)
-    # model.compile(loss='mean_squared_error', optimizer=optimizer,
-    #               metrics=["mse", RootMeanSquaredError(), "mae"])
-    model.compile(loss=modelCustomLoss.custom_loss, optimizer=optimizer,
+    model.compile(loss='mean_squared_error', optimizer=optimizer,
                   metrics=["mse", RootMeanSquaredError(), "mae"])
+    # model.compile(loss=modelCustomLoss.custom_loss, optimizer=optimizer,
+    #               metrics=["mse", RootMeanSquaredError(), "mae"])
 
     return model
 
