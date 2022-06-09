@@ -295,7 +295,7 @@ def train(callbacks=None):
     model, history, score = models.fit_model(model, ds_train, ds_test, epochs, verbose=True,
                                              plot_history=True, callbacks=callbacks)
 
-    model.save(f"./model/eit_reconstruction_{nb_elect}pts_test.h5")
+    model.save(f"./model/eit_reconstruction_{nb_elect}pts.h5")
     return model
 
 
@@ -341,9 +341,9 @@ def main_kfold():
 def main_autoencoder():
     start_time = datetime.now()
 
-    x, y = deepDSObj.load_data("./dataset/eit_positive.csv", x=f"v{nb_elect}", y=f"delta_perm{nb_elect}")
+    x, y = deepDSObj.load_data("../dataset/eit_positive.csv", x=f"v{nb_elect}", y=f"delta_perm{nb_elect}")
 
-    reconstruction = load_model(f"./model/eit_reconstruction_{nb_elect}pts")
+    reconstruction = load_model(f"../model/eit_reconstruction_{nb_elect}pts")
     x = reconstruction.predict(x)
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=42)
